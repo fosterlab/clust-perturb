@@ -39,20 +39,21 @@ data frame containing clusters and their repJ scores, fnode scores for each node
 in each cluster, and the best-matching clusters in each noise iteration.
 }
 \description{
-Test cluster robustness by randomly rewiring the network
+Test cluster robustness through random network rewiring
 }
 \details{
 clust.perturb is a general-purprose wrapper for any clustering algorithm. Four default
 clustering functions are included (MCL, walktrap, hierarchical, and k-medoids) with the
-option of passing in any clustering function. clust.perturb takes input networks in the 
-form of an unweighted edge list (2 column dataframe). Because clustering functions can have
-different input and output formats, clust.perturb also takes two conversion functions. 
+option of passing any clustering function. clust.perturb takes input networks as 
+an unweighted edge list formatted as a 2 column dataframe. Because clustering functions can have
+different input and output formats, in order to handle arbitrary clustering functions,
+clust.perturb also takes two conversion functions. 
 The first, edge.list.format converts the network edge list into the format required by the 
-clustering algorithm, for example a dist object. The second, cluster.format, converts the 
-output of the clustering algorithm into a common format, namely a character vector, each
+clustering algorithm, for example a dist object as required by MCL. The second, cluster.format, 
+converts the output of the clustering algorithm into a common format, namely a character vector, each
 element of which is a cluster with semicolon-separated nodes (e.g. c("A;B", "C;D;E"))
 
-clust.perturb calculates two metrics for each cluster. repJ measures a cluster's
+clust.perturb returns two metrics for each cluster. repJ measures a cluster's
 reproducibility, and calculated as the average maximum Jaccard index over noise iterations.
 fnode, which is calculated for each node in a cluster, counts the frequency with which that 
 node is reclustered in the closest-match cluster in each noise iteration, divided by the
