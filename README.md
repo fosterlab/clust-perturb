@@ -1,6 +1,6 @@
 # clust-perturb
 
-clust.perturb is an R package designed to test the robustness of graph-based clusters by randomly rewiring a portion of the underlying network and reclustering. Robust clusters “stick together” even after network rewiring, while non-robust clusters do not. Robustness is quantified using maximum Jaccard index.
+`clust.perturb` is an R package designed to test the robustness of graph-based clusters by randomly rewiring a portion of the underlying network and reclustering. Robust clusters “stick together” even after network rewiring, while non-robust clusters do not. clust.perturb quantifies robustness is using maximum Jaccard index.
 
 ## System requirements
 
@@ -15,16 +15,78 @@ Augur relies on functions from the following R packages:
 
 ## Installation
 
-To install clust.perturb, first install the devtools package, if it is not already installed: 
+To install `clust.perturb`, first install the devtools package, if it is not already installed: 
 
 ```r
 > install.packages("devtools") 
 ```
 
-Then, install clust.perturb from GitHub: 
+Then, install `clust.perturb` from GitHub: 
 
 ```r
 > devtools::install_github("GregStacey/clust-perturb")
 ```
 
 This should take no more than a few minutes.
+
+
+## Usage
+
+The main function `clust.perturb` takes a network as input. The network is formatted as a two-column  dataframe, which specifices the edge list of the network. Therefore, you must have a network in the form of an edge list in order to use `clust.perturb`. Two input parameters control the functioning of `clust.perturb`: `noise` is a scalar between 0 and 1 that specifies the fraction of the network that will be rewired on each iteration, and `iters` is a positive integer that specifies the number of iterations. 
+
+`noise`: In order to resolve robust and non-robust clusters, `noise` should be set to a "medium amount", such that some clusters remain intact while others are disrupted. This could be accomplished by choosing `noise` such that the variance of the `repJ` value returned by `clust.perturb` is close to maximum, although in practice the range `0.1<noise<0.2` is often sufficient.
+
+`iters: `Since `clust.perturb` clusters the network `iters+1` times, `clust.perturb` will be time-intensive if the underlying clustering algorithm is time-intensive and/or the network is large. Therefore, users can benefit from choosing a value for `iters` that is minimally sufficient to estimate robustness. In practice, `iters=5` is often sufficient to estimate `repJ` within +/-0.05 (95% CI).
+
+`edge.list.format` and `cluster.format`: `clust.perturb` perturbs the network by shuffling a portion of the inputted edge list. Therefore, clustering algorithms that take input other than an edge list will require a conversion function, specified by the argument `edge.list.format`, to convert the edge list into the input format required by the clustering function. Similarly, `cluster.format` formats the output of the clustering function into a common format, namely a character vector of semicolon-separated nodes.
+
+However, four clustering algorithms are included in `clust.perturb`, namely `k-med`, `MCL`, `walktrap`, and `hierarchical`. When using these clustering algorithms, it is not necessary to pass conversion functions. Simply run `clust.perturb` on the network. We provide a test network `corum_5000.csv`, which is 5000 edges selected from the binarized [CORUM 3.0 network](https://mips.helmholtz-muenchen.de/corum/#download).
+
+```r
+> network = as.data.frame(read_csv("corum_5000.csv"))
+> clusts = clust.perturb(network, clustering.algorithm = "hierarchical")
+```
+
+To confirm that the default `noise=0.1` is appropriate, visualize the `repJ` values and confirm they roughly span the range 0 to 1. If `repJ` values are closer to 1, a higher `noise` might be required. Conversely if `repJ` is low, try a smaller `noise` parameter.
+
+```r
+> clusts1 = clust.perturb(network, clustering.algorithm = "hierarchical", noise = 0.01) # lower noise
+> clusts2 = clust.perturb(network, clustering.algorithm = "hierarchical", noise = 0.2) # higher noise
+```
+
+`cluster.perturb` is a general purpose wrapper for many clustering algorithms. To use an arbitrary algorithm so, the arguments `clustering.algorithm`, `edge.list.format`, and `cluster.format` must be functions. Here is an example that explicitly sets these functions for hierarchical clustering
+
+```r
+## scratchpad
+library(igraph)
+library(RFLPtools)
+
+# hierarchical clustering algorithm
+alg = function(x) cutree(hclust(x, method="average"), k = 50)
+
+# function for converting edge-list to dist object
+# hclust requires a dist object
+ef = function(x) {
+  # make dense, triu adjacency matrix
+  am = as_adjacency_matrix(graph_from_edgelist(as.matrix(x), directed = F), sparse = F)
+  am[am>1] = 1
+  # convert to dist object
+  d = sim2dist(am, maxSim = 1)
+  return(d)
+}
+
+# function for converting hierarchical output to semicolon-separated character vector
+cf = function(x, y) {
+  tmp = character()
+  unqclusts = unique(x)
+  for (ii in 1:length(unqclusts)) {
+    tmp[ii] = paste(names(x)[x == unqclusts[ii]], collapse = ";")
+  }
+  return(tmp)
+}
+
+# cluster and test robustness
+clusts3 = clust.perturb(network, clustering.algorithm = alg, edge.list.format = ef, cluster.format = cf)
+```
+
+Note that this is identical to the built-in `hierarchical` method, i.e. `clusts3 = clust.perturb(network, clustering.algorithm = "hierarchical")`.

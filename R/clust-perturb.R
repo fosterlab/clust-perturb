@@ -128,7 +128,6 @@ clust.perturb = function(network,
     stop("clustering.algorithm must be a character (one of either 'mcl', 'hierarchical', 'walktrap', or 'k-med') or a function")
   }
   
-  
   # cluster without noise
   cc = 0
   unqprots = unique(c(network[,1], network[,2]))
@@ -160,7 +159,7 @@ clust.perturb = function(network,
       
       # transform network to required format (if needed)
       if (!is.null(edge.list.format)) ints.shuffle = edge.list.format(ints.shuffle)
-      
+
       # cluster
       these.clusters = clustering.algorithm(ints.shuffle)
       
