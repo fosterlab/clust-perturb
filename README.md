@@ -57,7 +57,6 @@ clusts2 = clust.perturb(network, clustering.algorithm = "hierarchical", noise = 
 `cluster.perturb` is a general purpose wrapper for many clustering algorithms. To use an arbitrary algorithm so, the arguments `clustering.algorithm`, `edge.list.format`, and `cluster.format` must be functions. Here is an example that explicitly sets these functions for hierarchical clustering
 
 ```r
-## scratchpad
 library(igraph)
 library(RFLPtools)
 
