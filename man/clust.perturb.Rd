@@ -14,11 +14,11 @@ clust.perturb(
 )
 }
 \arguments{
-\item{clustering.algorithm}{either a character string specifying one of four clustering
-algorithms ("mcl", "walktrap", "hierarchical", "k-med") or a function responsible for
+\item{clustering.algorithm}{a character string specifying one of four clustering
+algorithms ("mcl", "walktrap", "hierarchical", "k-med"), or a function responsible for
 clustering}
 
-\item{noise}{scalar with value between 0 and 1 specifying the amount of noise to 
+\item{noise}{scalar with value between 0 and 1. Specifyies the amount of noise to 
 add to the network. 0 specifies no noise, and 1 specifies total rewiring. Typical values
 are between 0.1 and 0.5.}
 
@@ -29,8 +29,8 @@ are between 0.1 and 0.5.}
 by clustering.algorithm.}
 
 \item{cluster.format}{NULL or a function that transforms output returned by 
-clustering.algorithm into a data frame with three or four columns, where columns one 
-and two are an edge list, column three is an id specifying the cluster assignment, and}
+clustering.algorithm into a character vector, where each element is a cluster whose 
+format is semicolon-separated nodes}
 
 \item{edge.list}{data frame with two columns. Each row is an edge between two nodes.}
 }
@@ -49,8 +49,8 @@ form of an unweighted edge list (2 column dataframe). Because clustering functio
 different input and output formats, clust.perturb also takes two conversion functions. 
 The first, edge.list.format converts the network edge list into the format required by the 
 clustering algorithm, for example a dist object. The second, cluster.format, converts the 
-output of the clustering algorithm into a common format, namely a list, each element of 
-which contains the nodes in a cluster.
+output of the clustering algorithm into a common format, namely a character vector, each
+element of which is a cluster with semicolon-separated nodes (e.g. c("A;B", "C;D;E"))
 
 clust.perturb calculates two metrics for each cluster. repJ measures a cluster's
 reproducibility, and calculated as the average maximum Jaccard index over noise iterations.
@@ -85,12 +85,12 @@ lines(sort(clusts3$repJ), type="dashed")
 network = as.data.frame(read_csv("data/corum_5000.csv"))
 # use clustering algorithm MCL, explicitly show conversion functions
 clustalg = function(x) mymcl(x, infl = 2)
-# edge.list.format converts dataframe edge.list to input required by MCL
+# edge.list.format converts dataframe edge.list to adjacency matrix, as required by MCL
 edgelist.func = function(ints.corum) {
   G = graph.data.frame(ints.corum,directed=FALSE)
   A = as_adjacency_matrix(G,type="both",names=TRUE,sparse=FALSE)
 }
-# cluster.format converts converts MCL output to list
+# cluster.format converts converts MCL output to character vector of semicolon-separated nodes
 clust.func = function(tmp, unqprots) {
   clusts = character()
   unqclusts = unique(tmp)
