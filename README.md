@@ -4,7 +4,7 @@
 
 ## System requirements
 
-Augur relies on functions from the following R packages:
+`clust.perturb` relies on functions from the following R packages:
 
 ```
 	igraph (>= 1.2.4.2)
@@ -91,6 +91,6 @@ clusts3 = clust.perturb(network, clustering.algorithm = alg, edge.list.format = 
 
 Note that this is identical to the built-in `hierarchical` method, i.e. `clusts3 = clust.perturb(network, clustering.algorithm = "hierarchical")`.
 
-Exploring some robust and non-robust clusters, we can see that the `repJ` value for the second cluster, `clusts3$repJ[2]`, is relatively high, typically >0.7. The second cluster in this set is "O15143;O15144;O15145;O15511;P59998;P61158;P61160", which completely matches to the Arp2/3 protein complex in CORUM (the ground-truth clusters). Therefore, this is a correctly assigned cluster that completely matches a community in the underlying network, and consequentially has high reproducibility.
+Exploring some robust and non-robust clusters, we can see that the `repJ` value for the second cluster, `clusts3$repJ[2]`, is relatively high, typically >0.7. This cluster is is "O15143;O15144;O15145;O15511;P59998;P61158;P61160", which completely matches to the Arp2/3 protein complex in CORUM. That is, it completely matches a ground-truth cluster. Therefore, this is a correctly assigned cluster that completely matches a community in the underlying network, and consequentially has high reproducibility.
 
 The `repJ` value for the first cluster `clusts3$repJ[1]` is relatively low, typically <0.3. This cluster is a large agglomeration of proteins from multiple complexes from CORUM, and loosely corresponds to clusters such as the Polycomb repressive complex 1 and SNF2h-cohesin-NuRD complex. Therefore, this cluster represents an incorrect assignment of proteins from multiple ground-truth clusters. Consequentially, small variations in the network can disrupt this assignment, which is represented as low reproducibility as quantified by `repJ`.
