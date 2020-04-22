@@ -18,13 +18,13 @@ Augur relies on functions from the following R packages:
 To install `clust.perturb`, first install the devtools package, if it is not already installed: 
 
 ```r
-> install.packages("devtools") 
+install.packages("devtools") 
 ```
 
 Then, install `clust.perturb` from GitHub: 
 
 ```r
-> devtools::install_github("GregStacey/clust-perturb")
+devtools::install_github("GregStacey/clust-perturb")
 ```
 
 This should take no more than a few minutes.
@@ -43,15 +43,15 @@ The main function `clust.perturb` takes a network as input. The network is forma
 However, four clustering algorithms are included in `clust.perturb`, namely `k-med`, `MCL`, `walktrap`, and `hierarchical`. When using these clustering algorithms, it is not necessary to pass conversion functions. Simply run `clust.perturb` on the network. We provide a test network `corum_5000.csv`, which is 5000 edges selected from the binarized [CORUM 3.0 network](https://mips.helmholtz-muenchen.de/corum/#download).
 
 ```r
-> network = as.data.frame(read_csv("corum_5000.csv"))
-> clusts = clust.perturb(network, clustering.algorithm = "hierarchical")
+network = as.data.frame(read_csv("corum_5000.csv"))
+clusts = clust.perturb(network, clustering.algorithm = "hierarchical")
 ```
 
 To confirm that the default `noise=0.1` is appropriate, visualize the `repJ` values and confirm they roughly span the range 0 to 1. If `repJ` values are closer to 1, a higher `noise` might be required. Conversely if `repJ` is low, try a smaller `noise` parameter.
 
 ```r
-> clusts1 = clust.perturb(network, clustering.algorithm = "hierarchical", noise = 0.01) # lower noise
-> clusts2 = clust.perturb(network, clustering.algorithm = "hierarchical", noise = 0.2) # higher noise
+clusts1 = clust.perturb(network, clustering.algorithm = "hierarchical", noise = 0.01) # lower noise
+clusts2 = clust.perturb(network, clustering.algorithm = "hierarchical", noise = 0.2) # higher noise
 ```
 
 `cluster.perturb` is a general purpose wrapper for many clustering algorithms. To use an arbitrary algorithm so, the arguments `clustering.algorithm`, `edge.list.format`, and `cluster.format` must be functions. Here is an example that explicitly sets these functions for hierarchical clustering
@@ -90,3 +90,7 @@ clusts3 = clust.perturb(network, clustering.algorithm = alg, edge.list.format = 
 ```
 
 Note that this is identical to the built-in `hierarchical` method, i.e. `clusts3 = clust.perturb(network, clustering.algorithm = "hierarchical")`.
+
+Exploring some robust and non-robust clusters, we can see that the `repJ` value for the second cluster, `clusts3$repJ[2]`, is relatively high, typically >0.7. The second cluster in this set is "O15143;O15144;O15145;O15511;P59998;P61158;P61160", which completely matches to the Arp2/3 protein complex in CORUM (the ground-truth clusters). Therefore, this is a correctly assigned cluster that completely matches a community in the underlying network, and consequentially has high reproducibility.
+
+The `repJ` value for the first cluster `clusts3$repJ[1]` is relatively low, typically <0.3. This cluster is a large agglomeration of proteins from multiple complexes from CORUM, and loosely corresponds to clusters such as the Polycomb repressive complex 1 and SNF2h-cohesin-NuRD complex. Therefore, this cluster represents an incorrect assignment of proteins from multiple ground-truth clusters. Consequentially, small variations in the network can disrupt this assignment, which is represented as low reproducibility as quantified by `repJ`.
