@@ -38,8 +38,8 @@ shufflecorum = function(ints.corum, ff){
   I.replace = sample(nrow(ints.corum), N.replace)
   
   # indices of unshuffled
-  ia0 = match(ints.corum$protA, unqprots)
-  ib0 = match(ints.corum$protB, unqprots)
+  ia0 = match(ints.corum[,1], unqprots)
+  ib0 = match(ints.corum[,2], unqprots)
   
   # indices of shuffled
   ia = ia0
@@ -54,19 +54,12 @@ shufflecorum = function(ints.corum, ff){
   }
   
   #
-  ints.shuffle$protA = unqprots[ia]
-  ints.shuffle$protB = unqprots[ib]
+  ints.shuffle[,1] = unqprots[ia]
+  ints.shuffle[,2] = unqprots[ib]
   
   # quality control: make sure you shuffled N.replace interactions
   N.diff = sum(!ia0==ia | !ib0==ib)
-  if (abs(N.replace - N.diff)>5) print(paste("shuffling missed", N.replace-N.diff, "interactions"))
-  
-  # # sort protein pairs alphabetically
-  # for (ii in 1:length(I)) {
-  #   tmp = sort(c(ia[ii], ib[ii]))
-  #   ia[ii] = tmp[1]
-  #   ib[ii] = tmp[2]
-  # }
+  #if (abs(N.replace - N.diff)>5) print(paste("shuffling missed", N.replace-N.diff, "interactions"))
   
   return(ints.shuffle) 
 }
@@ -133,21 +126,21 @@ calc.reproducibility = function(this.cluster, clusters){
 
 
 pam.edge.list.format = function(ints) {
-  unqprots = unique(c(ints$protA, ints$protB))
+  unqprots = unique(c(ints[,1], ints[,2]))
   nn = length(unqprots)
   
   # create adjacency matrix in the style of `dist` object
   # MAKE SURE YOU'RE GETTING THIS RIGHT!!!
-  I.row = match(ints$protA, unqprots) # row
-  I.col = match(ints$protB, unqprots) # column
+  I.row = match(ints[,1], unqprots) # row
+  I.col = match(ints[,2], unqprots) # column
   
-  unqprots = unique(c(ints$protA, ints$protB))
+  unqprots = unique(c(ints[,1], ints[,2]))
   nn = length(unqprots)
   
   # create adjacency matrix in the style of `dist` object
   # MAKE SURE YOU'RE GETTING THIS RIGHT!!!
-  I.row = match(ints$protA, unqprots) # row
-  I.col = match(ints$protB, unqprots) # column
+  I.row = match(ints[,1], unqprots) # row
+  I.col = match(ints[,2], unqprots) # column
   
   I.fill = numeric(length(I.row))
   for (ii in 1:length(I.row)) {
@@ -190,7 +183,7 @@ pam.cluster.format = function(clusts, unqprots) {
     Nmembers[ii] = sum(I)
   }
   clusts.prots = clusts.prots[Nmembers>=3]
-  clusts.prots = as.list(clusts.prots)
+  #clusts.prots = as.list(clusts.prots)
   
   return(clusts.prots)
 }

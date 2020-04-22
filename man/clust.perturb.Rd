@@ -18,37 +18,91 @@ clust.perturb(
 algorithms ("mcl", "walktrap", "hierarchical", "k-med") or a function responsible for
 clustering}
 
-\item{noise}{vector with values between 0 and 1 specifying the amount(s) of noise to 
-add to the network.}
+\item{noise}{scalar with value between 0 and 1 specifying the amount of noise to 
+add to the network. 0 specifies no noise, and 1 specifies total rewiring. Typical values
+are between 0.1 and 0.5.}
 
-\item{iters}{positive integer specifying number of iterations.}
+\item{iters}{positive integer specifying number of iterations. Typical values are between
+3 and 100, with 5-10 iterations often sufficient for estimation.}
 
-\item{edge.list.format}{optional function that transforms edge list into format required
+\item{edge.list.format}{NULL or a function that transforms edge.list into format required
 by clustering.algorithm.}
 
-\item{cluster.format}{optional function that transforms output returned by 
+\item{cluster.format}{NULL or a function that transforms output returned by 
 clustering.algorithm into a data frame with three or four columns, where columns one 
 and two are an edge list, column three is an id specifying the cluster assignment, and}
 
-\item{edge.list}{data frame with two or three columns, with first two columns providing 
-the list of edges and an optional third column giving edge weight.}
+\item{edge.list}{data frame with two columns. Each row is an edge between two nodes.}
 }
 \value{
-data frame containing all clusters and their density score.
+data frame containing clusters and their repJ scores, fnode scores for each node
+in each cluster, and the best-matching clusters in each noise iteration.
 }
 \description{
-Network to be clustered is formated as a data frame edge list (edge.list). Users can 
-pass a custom function edge.list.format to handle different formats required by
-clustering.algorithm. edge.list.format must transform a data frame edge list (two 
-columns unweighted, or three columsn weighted) into the required format.
+Test cluster robustness by randomly rewiring the network
 }
 \details{
-Assumes clustering.algorithm returns a list of clustered nodes. If clustering.algorithm
-returns a different format, users can pass a custom function cluster.format that
-transforms the output of clustering.algorithm into a list of clustered nodes.
+clust.perturb is a general-purprose wrapper for any clustering algorithm. Four default
+clustering functions are included (MCL, walktrap, hierarchical, and k-medoids) with the
+option of passing in any clustering function. clust.perturb takes input networks in the 
+form of an unweighted edge list (2 column dataframe). Because clustering functions can have
+different input and output formats, clust.perturb also takes two conversion functions. 
+The first, edge.list.format converts the network edge list into the format required by the 
+clustering algorithm, for example a dist object. The second, cluster.format, converts the 
+output of the clustering algorithm into a common format, namely a list, each element of 
+which contains the nodes in a cluster.
+
+clust.perturb calculates two metrics for each cluster. repJ measures a cluster's
+reproducibility, and calculated as the average maximum Jaccard index over noise iterations.
+fnode, which is calculated for each node in a cluster, counts the frequency with which that 
+node is reclustered in the closest-match cluster in each noise iteration, divided by the
+number of iterations.
 }
 \examples{
-first example
+# walktrap clustering algorithm with random network
+# make random network
+network = data.frame(x = sample(1:100, 1000, replace=T), y = sample(1:100, 1000, replace=T))
+# cluster and measure robustness
+clusts = clust.perturb(network, clustering.algorithm="walktrap")
 
-second example
+
+# example dataset at low, medium, and high noise levels
+# demonstrates that an appropriate noise level is one that gives the best resolution of repJ
+# read network
+network = as.data.frame(read_csv("data/corum_5000.csv"))
+# cluster and measure robustness
+clusts1 = clust.perturb(network, clustering.algorithm="hierarchical", noise=0.001) # noise too low
+clusts2 = clust.perturb(network, clustering.algorithm="hierarchical", noise=0.15) # appropriate noise
+clusts3 = clust.perturb(network, clustering.algorithm="hierarchical", noise=0.75) # noise too high
+# plot
+plot(sort(clusts1$repJ)) 
+lines(sort(clusts2$repJ))
+lines(sort(clusts3$repJ), type="dashed")
+
+
+# example dataset with custom functions
+# read network
+network = as.data.frame(read_csv("data/corum_5000.csv"))
+# use clustering algorithm MCL, explicitly show conversion functions
+clustalg = function(x) mymcl(x, infl = 2)
+# edge.list.format converts dataframe edge.list to input required by MCL
+edgelist.func = function(ints.corum) {
+  G = graph.data.frame(ints.corum,directed=FALSE)
+  A = as_adjacency_matrix(G,type="both",names=TRUE,sparse=FALSE)
+}
+# cluster.format converts converts MCL output to list
+clust.func = function(tmp, unqprots) {
+  clusts = character()
+  unqclusts = unique(tmp)
+  for (ii in 1:length(unqclusts)) {
+    I = tmp == unqclusts[ii]
+    if (sum(I)<3) next
+    clusts[ii] = paste(unqprots[I], collapse = ";")
+  }
+  clusts = clusts[!clusts==""]
+  clusts = clusts[!is.na(clusts)]
+  return(clusts)
+}
+# cluster and measure robustness
+clusts = clust.perturb(network, clustering.algorithm=clustalg, edge.list.format=edgelist.func, cluster.format=clust.func)
 }
