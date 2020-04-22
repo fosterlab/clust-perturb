@@ -1,6 +1,6 @@
 # clust-perturb
 
-`clust.perturb` is an R package designed to test the robustness of graph-based clusters by randomly rewiring a portion of the underlying network and reclustering. Robust clusters “stick together” even after network rewiring, while non-robust clusters do not. clust.perturb quantifies robustness is using maximum Jaccard index.
+`clust.perturb` is an R package designed to test the robustness of graph-based clusters by randomly rewiring a portion of the underlying network and reclustering. Robust clusters “stick together” even after network rewiring, while non-robust clusters do not. Robustness is quantified using maximum Jaccard index.
 
 ## System requirements
 
