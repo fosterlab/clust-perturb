@@ -1,4 +1,4 @@
-Package: clust-perturb
+Package: clust.perturb
 Title: Testing cluster robustness by random network rewiring
 Version: 1.0.0
 Authors@R: c(
