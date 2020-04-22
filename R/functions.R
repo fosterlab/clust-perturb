@@ -1,6 +1,9 @@
 
 # dependencies
-
+require(igraph)
+require(readr)
+require(Matrix)
+require(cluster)
 
 # functions
 
