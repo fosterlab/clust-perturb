@@ -20,7 +20,7 @@
 #' node is reclustered in the closest-match cluster in each noise iteration, divided by the
 #' number of iterations.
 #' 
-#' @param edge.list data frame with two columns. Each row is an edge between two nodes.
+#' @param network data frame with two columns. Each row is an edge between two nodes.
 #' @param clustering.algorithm a character string specifying one of four clustering
 #' algorithms ("mcl", "walktrap", "hierarchical", "k-med"), or a function responsible for
 #' clustering
@@ -29,41 +29,45 @@
 #' are between 0.1 and 0.5.
 #' @param iters positive integer specifying number of iterations. Typical values are between
 #' 3 and 100, with 5-10 iterations often sufficient for estimation.
-#' @param edge.list.format NULL or a function that transforms edge.list into format required
-#' by clustering.algorithm.
+#' @param edge.list.format NULL or a function that transforms network into format required
+#' by clustering.algorithm. If a function, must take exactly one argument.
 #' @param cluster.format NULL or a function that transforms output returned by 
 #' clustering.algorithm into a character vector, where each element is a cluster whose 
-#' format is semicolon-separated nodes 
+#' format is semicolon-separated nodes. If a function, must take exactly two arguments
 #' @return data frame containing clusters and their repJ scores, fnode scores for each node
 #' in each cluster, and the best-matching clusters in each noise iteration.
-#' 
 #' @examples
+#' library(igraph)
+#' 
 #' # walktrap clustering algorithm with random network
 #' # make random network
-#' network = data.frame(x = sample(1:100, 1000, replace=T), y = sample(1:100, 1000, replace=T))
+#' network = data.frame(x = sample(1:100, 1000, replace=TRUE), 
+#'   y = sample(1:100, 1000, replace=TRUE))
 #' # cluster and measure robustness
 #' clusts = clust.perturb(network, clustering.algorithm="walktrap")
 #' 
 #' 
-#' # example dataset at low, medium, and high noise levels
+#' # test robustness at low, medium, and high noise levels
 #' # demonstrates that an appropriate noise level is one that gives the best resolution of repJ
 #' # read network
-#' network = as.data.frame(read_csv("data/corum_5000.csv"))
 #' # cluster and measure robustness
-#' clusts1 = clust.perturb(network, clustering.algorithm="hierarchical", noise=0.001) # noise too low
-#' clusts2 = clust.perturb(network, clustering.algorithm="hierarchical", noise=0.15) # appropriate noise
-#' clusts3 = clust.perturb(network, clustering.algorithm="hierarchical", noise=0.75) # noise too high
+#' clusts1 = clust.perturb(network, clustering.algorithm="hierarchical", 
+#'   noise=0.001) # low noise
+#' clusts2 = clust.perturb(network, clustering.algorithm="hierarchical", 
+#'   noise=0.15) # medium noise
+#' clusts3 = clust.perturb(network, clustering.algorithm="hierarchical", 
+#'   noise=0.75) # high noise
 #' # plot
 #' plot(sort(clusts1$repJ)) 
 #' lines(sort(clusts2$repJ))
-#' lines(sort(clusts3$repJ), type="dashed")
+#' lines(sort(clusts3$repJ))
 #' 
 #' 
 #' # example dataset with custom functions
 #' # read network
-#' network = as.data.frame(read_csv("data/corum_5000.csv"))
 #' # use clustering algorithm MCL, explicitly show conversion functions
-#' clustalg = function(x) mymcl(x, infl = 2)
+#' library(MCL)
+#' clustalg = function(x) mcl(x, addLoops = FALSE)
 #' # edge.list.format converts dataframe edge.list to adjacency matrix, as required by MCL
 #' edgelist.func = function(ints.corum) {
 #'   G = graph.data.frame(ints.corum,directed=FALSE)
@@ -71,6 +75,7 @@
 #' }
 #' # cluster.format converts converts MCL output to character vector of semicolon-separated nodes
 #' clust.func = function(tmp, unqprots) {
+#'   tmp = tmp$Cluster
 #'   clusts = character()
 #'   unqclusts = unique(tmp)
 #'   for (ii in 1:length(unqclusts)) {
@@ -83,7 +88,10 @@
 #'   return(clusts)
 #' }
 #' # cluster and measure robustness
-#' clusts = clust.perturb(network, clustering.algorithm=clustalg, edge.list.format=edgelist.func, cluster.format=clust.func)
+#' clusts = clust.perturb(network, clustering.algorithm=clustalg, 
+#'   edge.list.format=edgelist.func, cluster.format=clust.func)
+#' @export
+
 
 clust.perturb = function(network, 
                          clustering.algorithm, 
@@ -109,15 +117,15 @@ clust.perturb = function(network,
       cluster.format = mcl.cluster.format
       edge.list.format = mcl.edge.list.format
     } else if ((clustering.algorithm) == "hierarchical") {
-      tmp = function(x) cutree(hclust(x, method="average"), k=50)
+      tmp = function(x) stats::cutree(stats::hclust(x, method="average"), k=50)
       cluster.format = hierarch.cluster.format
       edge.list.format = hierarch.edge.list.format
     } else if ((clustering.algorithm) == "walktrap") {
-      tmp = walktrap.community
+      tmp = igraph::walktrap.community
       cluster.format = NULL
-      edge.list.format = function(x) graph_from_edgelist(as.matrix(x), directed = F)
+      edge.list.format = function(x) igraph::graph_from_edgelist(as.matrix(x), directed = F)
     } else if ((clustering.algorithm) == "k-med") {
-      tmp = function(x) pam(x, 50)
+      tmp = function(x) cluster::pam(x, 50)
       cluster.format = pam.cluster.format
       edge.list.format = pam.edge.list.format
     }

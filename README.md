@@ -79,7 +79,7 @@ cf = function(x, y) {
   tmp = character()
   unqclusts = unique(x)
   for (ii in 1:length(unqclusts)) {
-    tmp[ii] = paste(names(x)[x == unqclusts[ii]], collapse = ";")
+    tmp[ii] = paste(y[x == unqclusts[ii]], collapse = ";")
   }
   return(tmp)
 }

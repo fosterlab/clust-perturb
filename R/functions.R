@@ -1,3 +1,4 @@
+#' @export
 
 # dependencies
 require(igraph)
@@ -64,66 +65,6 @@ shufflecorum = function(ints.corum, ff){
   return(ints.shuffle) 
 }
 
-calc.reproducibility = function(this.cluster, clusters){
-  unqIters = unique(clusters$iter)
-  
-  this.cluster = unlist(strsplit(this.cluster, ";"))
-  this.size = length(this.cluster)
-  this.size = formatC(this.size, width=3, flag="0")
-
-  # find its best match in the other iters
-  tmp = numeric(10)
-  bestMatches = character(length(unqIters))
-  for (mm in 1:length(unqIters)) {
-    set0 = clusters$cluster[clusters$iter==unqIters[mm]]
-    JJ = numeric(length(set0))
-    for (uu in 1:length(set0)) {
-      that.cluster = unlist(strsplit(set0[uu], ";"))
-      JJ[uu] = length(intersect(this.cluster, that.cluster)) / 
-        length(unique(c(this.cluster, that.cluster)))
-    }
-    tmp[mm] = max(JJ)
-    I.match = which.max(JJ)
-    bestMatches[mm] = set0[I.match]
-  }
-  
-  # make consensus adjacency matrix
-  allProts = unique(c(this.cluster, unlist(lapply(bestMatches, strsplit, ";"))))
-  # put this.cluster in the middle
-  tmp = allProts[!allProts %in% this.cluster]
-  nn = round(length(tmp)/2)
-  allProts = c(tmp[1:nn], this.cluster, tmp[(nn+1):length(tmp)])
-  adjmat = matrix(numeric(length(allProts)^2), nrow=length(allProts), ncol=length(allProts))
-  df.adjmat = data.frame(prots = character(0),
-                         variable = character(0),
-                         value = numeric(0), iter=numeric(0), stringsAsFactors = F)
-  bestMatches = c(paste(this.cluster,collapse=";"), bestMatches)
-  Ar = numeric(length(bestMatches))
-  for (mm in 1:length(bestMatches)) {
-    that.cluster = unlist(strsplit(bestMatches[mm], ";"))
-    for (uu in 1:length(that.cluster)) {
-      ia = which(allProts %in% that.cluster[uu])
-      for (vv in 1:length(that.cluster)) {
-        if (uu>=vv) next
-        ib = which(allProts %in% that.cluster[vv])
-        adjmat[ia,ib] = adjmat[ia,ib]+1
-        adjmat[ib,ia] = adjmat[ib,ia]+1
-      }
-    }
-    
-    Ar[mm] = calcA(this.cluster, paste(that.cluster, collapse=";"))
-    df.tmp = as.data.frame(adjmat)
-    df.tmp$prots = allProts
-    df.tmp2 = melt(df.tmp, id.vars="prots")
-    df.tmp2$iter = mm
-    df.tmp2$value = df.tmp2$value * length(bestMatches) / mm
-    df.adjmat = rbind(df.adjmat, df.tmp2)
-  }
-  df.adjmat$prots = factor(df.adjmat$prots, levels = allProts)
-  
-  return(df.adjmat)
-}
-
 
 pam.edge.list.format = function(ints) {
   unqprots = unique(c(ints[,1], ints[,2]))
@@ -163,8 +104,8 @@ pam.edge.list.format = function(ints) {
   }
   
   # dummy dist object
-  x = matrix(runif(nn * 10), nrow = nn, ncol=10)
-  d = dist(x)
+  x = matrix(stats::runif(nn * 10), nrow = nn, ncol=10)
+  d = stats::dist(x)
   attr(d, 'Upper') = T
   d[1:length(d)] = 1
   d[I.fill] = 0
@@ -190,8 +131,8 @@ pam.cluster.format = function(clusts, unqprots) {
 
 
 mcl.edge.list.format = function(ints.corum) {
-  G = graph.data.frame(ints.corum,directed=FALSE)
-  A = as_adjacency_matrix(G,type="both",names=TRUE,sparse=FALSE)
+  G = igraph::graph.data.frame(ints.corum,directed=FALSE)
+  A = igraph::as_adjacency_matrix(G,type="both",names=TRUE,sparse=FALSE)
 }
 
 mcl.cluster.format = function(tmp, unqprots) {
@@ -248,7 +189,7 @@ mymcl = function (m, infl, iter = 1000, remove.self.loops = FALSE, prune = FALSE
   }
   if (use.sparse || force.sparse) {
     {
-      m = Matrix(m)
+      m = Matrix::Matrix(m)
       if (verbose) {
         print("sparse matrices will be used")
       }
