@@ -32,7 +32,8 @@ by clustering.algorithm. If a function, must take exactly one argument.}
 
 \item{cluster.format}{NULL or a function that transforms output returned by 
 clustering.algorithm into a character vector, where each element is a cluster whose 
-format is semicolon-separated nodes. If a function, must take exactly two arguments}
+format is semicolon-separated nodes. If a function, must take exactly two arguments. The
+second argument must be a sorted character vector of unique nodes in the original network.}
 }
 \value{
 data frame containing clusters and their repJ scores, fnode scores for each node
@@ -86,25 +87,29 @@ lines(sort(clusts2$repJ))
 lines(sort(clusts3$repJ))
 
 
-# example dataset with custom functions
-# read network
+# clustering algorithm with custom conversion functions
+
 # use clustering algorithm MCL, explicitly show conversion functions
 library(MCL)
 clustalg = function(x) mcl(x, addLoops = FALSE)
+
 # edge.list.format converts dataframe edge.list to adjacency matrix, as required by MCL
 edgelist.func = function(ints.corum) {
   G = graph.data.frame(ints.corum,directed=FALSE)
   A = as_adjacency_matrix(G,type="both",names=TRUE,sparse=FALSE)
 }
+
 # cluster.format converts converts MCL output to character vector of semicolon-separated nodes
-clust.func = function(tmp, unqprots) {
+# cluster.format requires a second argument, unqnodes, which is the sorted vector of unique 
+# nodes in the network, i.e. unqnodes = unique(c(network[,1], network[,2]))
+clust.func = function(tmp, unqnodes) {
   tmp = tmp$Cluster
   clusts = character()
   unqclusts = unique(tmp)
   for (ii in 1:length(unqclusts)) {
     I = tmp == unqclusts[ii]
     if (sum(I)<3) next
-    clusts[ii] = paste(unqprots[I], collapse = ";")
+    clusts[ii] = paste(unqnodes[I], collapse = ";")
   }
   clusts = clusts[!clusts==""]
   clusts = clusts[!is.na(clusts)]

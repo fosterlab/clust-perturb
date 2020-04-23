@@ -5,7 +5,7 @@ Authors@R: c(
   person("R Greg", "Stacey", email = "richard.greg.stacey@msl.ubc.ca",
          role = c("aut", "cre", "led")))
 BugReports: https://github.com/GregStacey/clust-perturb/issues
-Description: clust.perturb is an R package that measures the reproducibility of clusters, and nodes within clusters, over multiple iterations of network perturbation
+Description: clust.perturb is an R package that measures the reproducibility of clusters, and nodes within clusters, over multiple iterations of network perturbation.
 Depends: R (>= 3.5.0)
 Imports:
 	igraph (>= 0.5.1),
