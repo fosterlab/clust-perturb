@@ -2,3 +2,4 @@
 
 export()
 export(clust.perturb)
+export(corum_5000)

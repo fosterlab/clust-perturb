@@ -52,6 +52,7 @@ Four clustering algorithms are included in `clust.perturb`, namely `k-med`, `MCL
 We provide a test network `corum_5000`, which is 5000 edges selected from the binarized [CORUM 3.0 network](https://mips.helmholtz-muenchen.de/corum/#download).
 
 ```r
+data("corum_5000")
 clusts = clust.perturb(corum_5000, clustering.algorithm = "hierarchical", k=20)
 ```
 
