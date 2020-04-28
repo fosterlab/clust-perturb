@@ -105,6 +105,8 @@ clust.perturb = function(network,
                          edge.list.format = NULL,
                          cluster.format = NULL) {
   
+  #extra.args = list(...)
+  
   if (is.character(clustering.algorithm)) {
     clustering.algorithm = tolower(clustering.algorithm)
     
@@ -118,7 +120,7 @@ clust.perturb = function(network,
     }
     
     if ((clustering.algorithm) == "mcl") {
-      tmp = function(x) mymcl(x, infl = 2)
+      tmp = function(x) MCL::mcl(x, addLoops = FALSE)
       cluster.format = mcl.cluster.format
       edge.list.format = mcl.edge.list.format
     } else if ((clustering.algorithm) == "hierarchical") {
@@ -138,7 +140,7 @@ clust.perturb = function(network,
   } 
   
   if (!is.function(clustering.algorithm)) {
-    stop("clustering.algorithm must be a character (one of either 'mcl', 'hierarchical', 'walktrap', or 'k-med') or a function")
+    stop("clustering.algorithm must be a string (one of either 'mcl', 'hierarchical', 'walktrap', or 'k-med') or a function")
   }
   
   # cluster without noise
