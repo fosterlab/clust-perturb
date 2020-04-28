@@ -14,6 +14,7 @@
 	stats,
 	RFLPtools,
 	MCL,
+	methods,
 	Rdpack (>= 0.7)
 ```
 
@@ -44,7 +45,13 @@ The main function `clust.perturb` takes a network as input. The network is forma
 
 `edge.list.format` and `cluster.format`: `clust.perturb` perturbs the network by shuffling a portion of the inputted edge list. Therefore, clustering algorithms that take input other than an edge list will require a conversion function, specified by the argument `edge.list.format`, to convert the edge list into the input format required by the clustering function. `edge.list.format` must take exactly one argument: the 2-column edge list datafram. Similarly, `cluster.format` formats the output of the clustering function into a common format, namely a character vector of semicolon-separated nodes. `cluster.format` must take exactly two arguments: the first is the output object of the clustering algorithm, and the second is the sorted character vector of unique nodes from the original network, i.e. `unique(c(network[,1], network[,2]))`. For clustering algorithms such as `mcl` that return node indices but not names, this second argument is used to include node names in clusters; otherwise this second argument can be ignored in `cluster.format`, although `cluster.format` must take two arguments even if the second is not used.
 
-However, four clustering algorithms are included in `clust.perturb`, namely `k-med`, `MCL`, `walktrap`, and `hierarchical`. When using these clustering algorithms, it is not necessary to pass conversion functions. Simply run `clust.perturb` on the network. We provide a test network `corum_5000`, which is 5000 edges selected from the binarized [CORUM 3.0 network](https://mips.helmholtz-muenchen.de/corum/#download).
+Four clustering algorithms are included in `clust.perturb`, namely `k-med`, `MCL`, `walktrap`, and `hierarchical`. These do not require conversion functions. Simply run `clust.perturb` on the network. Arguments can be passed to these functions. For full arguments, see the documentation
+- `?pam` ("k-med")
+- `?mcl` ("MCL")
+- `?walktrap.community` ("walktrap")
+- `?cutree` ("hiearchical")
+
+We provide a test network `corum_5000`, which is 5000 edges selected from the binarized [CORUM 3.0 network](https://mips.helmholtz-muenchen.de/corum/#download).
 
 ```r
 clusts = clust.perturb(corum_5000, clustering.algorithm = "hierarchical")

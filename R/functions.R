@@ -123,7 +123,7 @@ pam.cluster.format = function(clusts, unqprots) {
     clusts.prots[ii] = paste(unqprots[I], collapse=";")
     Nmembers[ii] = sum(I)
   }
-  clusts.prots = clusts.prots[Nmembers>=3]
+  #clusts.prots = clusts.prots[Nmembers>=3]
   #clusts.prots = as.list(clusts.prots)
   
   return(clusts.prots)
@@ -141,7 +141,7 @@ mcl.cluster.format = function(tmp, unqnodes) {
   unqclusts = unique(tmp)
   for (ii in 1:length(unqclusts)) {
     I = tmp == unqclusts[ii]
-    if (sum(I)<3) next
+    #if (sum(I)<3) next
     clusts[ii] = paste(unqnodes[I], collapse = ";")
   }
   clusts = clusts[!clusts==""]

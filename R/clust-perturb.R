@@ -35,6 +35,7 @@
 #' clustering.algorithm into a character vector, where each element is a cluster whose 
 #' format is semicolon-separated nodes. If a function, must take exactly two arguments. The
 #' second argument must be a sorted character vector of unique nodes in the original network.
+#' @param ... arguments passed to clustering algorithm.
 #' @return data frame containing clusters and their repJ scores, fnode scores for each node
 #' in each cluster, and the best-matching clusters in each noise iteration.
 #' @examples
@@ -63,6 +64,13 @@
 #' lines(sort(clusts2$repJ))
 #' lines(sort(clusts3$repJ))
 #' 
+#' 
+#' # passing clustering arguments to default algorithms
+#' clusts = clust.perturb(network, clustering.algorithm="mcl", inflation = 4,
+#'   expansion = 3.5)
+#' clusts = clust.perturb(network, clustering.algorithm="hierarchical", k = 2)
+#' clusts = clust.perturb(network, clustering.algorithm="walktrap", steps = 10)
+#'clusts = clust.perturb(network, clustering.algorithm="k-med", k = 10)
 #' 
 #' # clustering algorithm with custom conversion functions
 #'
@@ -103,10 +111,10 @@ clust.perturb = function(network,
                          noise = 0.1, 
                          iters = 3, 
                          edge.list.format = NULL,
-                         cluster.format = NULL) {
+                         cluster.format = NULL, ...) {
   
-  #extra.args = list(...)
-  
+  extra.args = list(...)
+
   if (is.character(clustering.algorithm)) {
     clustering.algorithm = tolower(clustering.algorithm)
     
@@ -120,19 +128,21 @@ clust.perturb = function(network,
     }
     
     if ((clustering.algorithm) == "mcl") {
-      tmp = function(x) MCL::mcl(x, addLoops = FALSE)
+      tmp = function(x, extra.args) MCL::mcl(x = x, addLoops = FALSE)
       cluster.format = mcl.cluster.format
       edge.list.format = mcl.edge.list.format
     } else if ((clustering.algorithm) == "hierarchical") {
-      tmp = function(x) stats::cutree(stats::hclust(x, method="average"), k=50)
+      # set default k=20, since cutree default is k=NULL
+      if (!"k" %in% names(extra.args)) extra.args = c(extra.args, k=20)
+      tmp = function(x, extra.args) stats::cutree(stats::hclust(d = x, method="average"), extra.args)
       cluster.format = hierarch.cluster.format
       edge.list.format = hierarch.edge.list.format
     } else if ((clustering.algorithm) == "walktrap") {
-      tmp = igraph::walktrap.community
+      tmp = function(x, extra.args) igraph::walktrap.community(graph = x, extra.args)
       cluster.format = NULL
       edge.list.format = function(x) igraph::graph_from_edgelist(as.matrix(x), directed = F)
     } else if ((clustering.algorithm) == "k-med") {
-      tmp = function(x) cluster::pam(x, 50)
+      tmp = function(x, extra.args) cluster::pam(x, extra.args)
       cluster.format = pam.cluster.format
       edge.list.format = pam.edge.list.format
     }
@@ -148,7 +158,13 @@ clust.perturb = function(network,
   unqprots = unique(c(network[,1], network[,2]))
   network.input = network
   if (!is.null(edge.list.format)) network.input = edge.list.format(network)
-  tmp = clustering.algorithm(network.input)
+  # cluster
+  if (length(methods::formalArgs(clustering.algorithm))==1){
+    tmp = clustering.algorithm(network.input)
+  } else if (length(methods::formalArgs(clustering.algorithm))==2) {
+    tmp = clustering.algorithm(network.input, extra.args)
+  } else stop("custom clustering.algorithm must take exactly one argument")
+  #tmp = clustering.algorithm(network.input, extra.args)
   if (!is.null(cluster.format)) tmp = cluster.format(tmp, unqprots)
   # store clusters
   clusters0 = data.frame(cluster = character(length(tmp)),
@@ -176,7 +192,12 @@ clust.perturb = function(network,
       if (!is.null(edge.list.format)) ints.shuffle = edge.list.format(ints.shuffle)
 
       # cluster
-      these.clusters = clustering.algorithm(ints.shuffle)
+      if (length(methods::formalArgs(clustering.algorithm))==1){
+        these.clusters = clustering.algorithm(ints.shuffle)
+      } else if (length(methods::formalArgs(clustering.algorithm))==2) {
+        these.clusters = clustering.algorithm(ints.shuffle, extra.args)
+      } else stop("custom clustering.algorithm must take exactly one argument")
+      
       
       # transform clusters to list (if needed)
       if (!is.null(cluster.format)) these.clusters = cluster.format(these.clusters, unqprots)

@@ -10,7 +10,8 @@ clust.perturb(
   noise = 0.1,
   iters = 3,
   edge.list.format = NULL,
-  cluster.format = NULL
+  cluster.format = NULL,
+  ...
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ by clustering.algorithm. If a function, must take exactly one argument.}
 clustering.algorithm into a character vector, where each element is a cluster whose 
 format is semicolon-separated nodes. If a function, must take exactly two arguments. The
 second argument must be a sorted character vector of unique nodes in the original network.}
+
+\item{...}{arguments passed to clustering algorithm.}
 }
 \value{
 data frame containing clusters and their repJ scores, fnode scores for each node
@@ -86,6 +89,13 @@ plot(sort(clusts1$repJ))
 lines(sort(clusts2$repJ))
 lines(sort(clusts3$repJ))
 
+
+# passing clustering arguments to default algorithms
+clusts = clust.perturb(network, clustering.algorithm="mcl", inflation = 4,
+  expansion = 3.5)
+clusts = clust.perturb(network, clustering.algorithm="hierarchical", k = 2)
+clusts = clust.perturb(network, clustering.algorithm="walktrap", steps = 10)
+clusts = clust.perturb(network, clustering.algorithm="k-med", k = 10)
 
 # clustering algorithm with custom conversion functions
 
