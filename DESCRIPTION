@@ -18,6 +18,7 @@ Imports:
 	methods,
 	Rdpack (>= 0.7)
 Suggests: knitr
+LazyData: true
 VignetteBuilder: knitr
 License: GPL-3 + file LICENSE
 Encoding: UTF-8

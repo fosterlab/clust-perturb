@@ -52,14 +52,14 @@ Four clustering algorithms are included in `clust.perturb`, namely `k-med`, `MCL
 We provide a test network `corum_5000`, which is 5000 edges selected from the binarized [CORUM 3.0 network](https://mips.helmholtz-muenchen.de/corum/#download).
 
 ```r
-clusts = clust.perturb(corum_5000, clustering.algorithm = "hierarchical")
+clusts = clust.perturb(corum_5000, clustering.algorithm = "hierarchical", k=20)
 ```
 
 To confirm that the default `noise=0.1` is appropriate, visualize the `repJ` values and confirm they roughly span the range 0 to 1. If `repJ` values are closer to 1, a higher `noise` might be required. Conversely if `repJ` is low, try a smaller `noise` parameter.
 
 ```r
-clusts1 = clust.perturb(corum_5000, clustering.algorithm = "hierarchical", noise = 0.01) # lower noise
-clusts2 = clust.perturb(corum_5000, clustering.algorithm = "hierarchical", noise = 0.2) # higher noise
+clusts1 = clust.perturb(corum_5000, clustering.algorithm = "hierarchical", k = 25, noise = 0.01) # lower noise
+clusts2 = clust.perturb(corum_5000, clustering.algorithm = "hierarchical", k = 25, noise = 0.2) # higher noise
 ```
 
 To explore some example output, we first clustered `corum_5000` with `clusts3 = clust.perturb(corum_5000, clustering.algorithm = "hierarchical")`. We see that the `repJ` value for the second cluster, `clusts3$repJ[2]`, is relatively high, typically >0.7. This cluster is is "O15143;O15144;O15145;O15511;P59998;P61158;P61160", which completely matches to the Arp2/3 protein complex in CORUM. That is, it completely matches a ground-truth cluster. Therefore, this is a correctly assigned cluster, completely matching a community in the underlying network, and consequentially has high reproducibility.

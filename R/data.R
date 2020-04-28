@@ -5,8 +5,9 @@
 #' @format A dataframe with 5000 rows and 2 columns
 #' \describe{
 #'   \item{protA}{UNIPROT identifier for the first protein in the pairwise interaction}
-#'   \item{carat}{UNIPROT identifier for the second protein}
+#'   \item{protB}{UNIPROT identifier for the second protein}
 #'   ...
 #' }
 #' @source \url{https://mips.helmholtz-muenchen.de/corum/#download}
+#' @export
 "corum_5000"
