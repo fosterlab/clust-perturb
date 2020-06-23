@@ -9,5 +9,3 @@
 #'   ...
 #' }
 #' @source \url{https://mips.helmholtz-muenchen.de/corum/#download}
-#' @export
-"corum_5000"
